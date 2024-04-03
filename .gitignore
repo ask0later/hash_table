@@ -2,5 +2,5 @@
 obj
 .vscode
 .gitmodules
-.compile_commands.json
+compile_commands.json
 .hash
