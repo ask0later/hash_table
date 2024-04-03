@@ -1,0 +1,6 @@
+.cache
+obj
+.vscode
+.gitmodules
+.compile_commands.json
+.hash
