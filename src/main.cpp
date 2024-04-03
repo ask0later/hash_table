@@ -1,5 +1,5 @@
 
-#include "hash_map.h"
+#include "hash_table.h"
 #include "hash_funcs.h"
 
 const char* text_files[NUM_HASH_FUNCS] = {"data/data_zero_hash.csv",
