@@ -67,7 +67,6 @@ size_t RORHash(char* buffer)
 size_t GNUHash(char* buffer)
 {
         char* s = buffer;
-
         size_t h = 5381;
 
         for (unsigned char c = (unsigned char) *s; c != '\0'; c = (unsigned char) *++s)
