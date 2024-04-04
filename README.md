@@ -25,7 +25,7 @@
 
 ![sum_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/Symbol_Sum_HashFunction.png)
 
-![average_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/Average_HashFunction.png)
+![average_hash](https://github.com/ask0later/hash_table/blob/b482ea65fe5d105a4e427337b9f87878191b21fd/image/Average_HashFunction.png)
 
 ![rol_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/ROL_HashFunction.png)
 
