@@ -14,7 +14,7 @@ const char    TEST_FILE[] = "text/test.txt";
 const char  HAMLET_FILE[] = "text/hamlet.txt";
 const char GENERAL_FILE[] = "data/general.txt";
 
-const size_t HASH_TABLE_SIZE = 103;
+const size_t HASH_TABLE_SIZE = 2411; // 103
 const size_t MAX_SIZE_WORD   = 20;
 
 struct hash_table

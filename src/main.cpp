@@ -29,10 +29,13 @@ int main()
         err_allocator err_alloc = {};
         error_allocator_Ctor(&err_alloc);
         
-        for (size_t i = 0; i < NUM_HASH_FUNCS; i++)
-        {
-                CreateHashTable(&table, hash_funcs[i], text_files[i], &err_alloc);
-        }
+
+        CreateHashTable(&table, SumHash, "data/data_sum_hash_big_hash_size.csv", &err_alloc);
+
+        // for (size_t i = 0; i < NUM_HASH_FUNCS; i++)
+        // {
+        //         CreateHashTable(&table, hash_funcs[i], text_files[i], &err_alloc);
+        // }
 
         error_allocator_Dtor(&err_alloc);
         return 0;

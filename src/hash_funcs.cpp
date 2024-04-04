@@ -22,7 +22,8 @@ size_t SumHash(char* buffer)
         size_t   i = 0;
         while (buffer[i] != '\0')
         {
-                sum += (size_t) buffer[i++];
+                sum += (size_t) buffer[i];
+                i++;
         }
         return sum;
 }
