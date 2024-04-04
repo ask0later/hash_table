@@ -123,7 +123,7 @@ load-factor = 141. dispersion = 131.
 ### ROLHashFunction
 Данная функция использует циклический сдвиг влево и XOR (исключающее или).
 
-hash[i] = (hash[i - 1] << 1) \XOR buffer[i]
+hash[i] = (hash[i - 1] << 1) XOR buffer[i]
 ~~~
 size_t ROLHash(char* buffer)
 {
@@ -145,7 +145,7 @@ load-factor = 45. dispersion = 6.
 ### RORHashFunction
 Данная функция использует циклический сдвиг вправо и XOR (исключающее или).
 
-hash[i] = (hash[i - 1] >> 1) \XOR buffer[i]
+hash[i] = (hash[i - 1] >> 1) XOR buffer[i]
 ~~~
 size_t RORHash(char* buffer)
 {
