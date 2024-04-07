@@ -10,7 +10,8 @@ const char* text_files[] ={"data/data_zero_hash.csv",
                            "data/data_aver_hash.csv",
                            "data/data_rol_hash.csv",
                            "data/data_ror_hash.csv",
-                           "data/data_gnu_hash.csv"};
+                           "data/data_gnu_hash.csv",
+                           "data/data_crc32.csv"};
 
 
 
@@ -20,7 +21,7 @@ int main()
         err_allocator err_alloc = {};
         error_allocator_Ctor(&err_alloc);
 
-        TestHashFunction(&table, GNUHash, "data/data_gnu_hash.csv", &err_alloc);
+        TestHashFunction(&table, CRC32Hash, "data/data_crc32.csv", &err_alloc);
 
         // for (size_t i = 0; i < sizeof(hash_funcs); i++)
         // {

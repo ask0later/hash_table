@@ -15,6 +15,8 @@ size_t   AverageHash(char* buffer);
 size_t       ROLHash(char* buffer);
 size_t       RORHash(char* buffer);
 size_t       GNUHash(char* buffer);
+size_t     CRC32Hash(char* buffer);
+
 
 typedef size_t (*function_type)(char*);
 const function_type hash_funcs[] = {ZeroHash, 
@@ -24,6 +26,7 @@ const function_type hash_funcs[] = {ZeroHash,
                                     AverageHash,
                                     ROLHash,
                                     RORHash,
-                                    GNUHash};
+                                    GNUHash,
+                                    CRC32Hash};
 
 #endif
