@@ -2,9 +2,10 @@
 #include "list.h"
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 
 
-int CreateHashTable(hash_table* table, size_t (*hash_function) (char*), const char text_file[], err_allocator* err_alloc)
+int TestHashFunction(hash_table* table, size_t (*hash_function) (char*), const char text_file[], err_allocator* err_alloc)
 {
         if (CtorHashTable(table, hash_function, err_alloc) != 0)
         {
@@ -24,11 +25,28 @@ int CreateHashTable(hash_table* table, size_t (*hash_function) (char*), const ch
         }
 
         FILE* To = fopen(text_file, "w");
+        if (To == NULL)
+        {
+                INSERT_ERROR_NODE(err_alloc, "file opening is failed");
+                ERR_ALLOC_TERMINATE(err_alloc);
+                DeleteTableNodeData(table);
+                DtorHashTable(table); 
+        }
+        
         DumpHashTable(To, table);
         fclose(To);
 
         FILE* general = fopen(GENERAL_FILE, "a");
+        if (To == NULL)
+        {
+                INSERT_ERROR_NODE(err_alloc, "file opening is failed");
+                ERR_ALLOC_TERMINATE(err_alloc);
+                DeleteTableNodeData(table);
+                DtorHashTable(table); 
+        }
+        
         fprintf(general, "%lu, %lu\n", GetLoadFactor(table), GetDispersion(table));
+        
         fclose(general);
 
         DeleteTableNodeData(table);
@@ -46,7 +64,7 @@ int CtorHashTable(hash_table* table, size_t (*hash_function) (char*), err_alloca
 
         table->bucket = (List**) calloc(HASH_TABLE_SIZE, sizeof(List*));
         if (!table->bucket)
-        {
+        {       
                INSERT_ERROR_NODE(err_alloc, "dynamic alloc failed");
                return 1; 
         }
@@ -95,11 +113,13 @@ int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_a
 
         size_t i_text = 0;
 
+        List* current_list = NULL;
+
         while (i_text <= buf.size_buffer)
         {
                 sscanf(buf.str + i_text, "%s", word);
-
                 word_size = strlen(word); 
+
                 i_text += word_size + 1;
 
                 word_ptr = (char*) calloc(word_size + 1, sizeof(char));
@@ -112,14 +132,16 @@ int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_a
                 
                 strncpy(word_ptr, word, word_size + 1);
                 
-                if (FindElem(word_ptr, table, err_alloc) == -1)
+                size_t list_index = table->hash_function(word_ptr) % table->size;
+
+                current_list = table->bucket[list_index];
+
+                Iterator it = FindElem(current_list, word_ptr);
+
+                if (it.index == -1)
                 {
-                        if (AddElem(word_ptr, table, err_alloc) != 0)
-                        {
-                                INSERT_ERROR_NODE(err_alloc, "function AddElem is failed");
-                                DeleteBuffer(&buf);
-                                return 1;
-                        }
+                        it.index = 0;
+                        ListPushBack(current_list, word_ptr, &it);
                         elem_num++;
                 }
                 else 
@@ -128,8 +150,8 @@ int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_a
                 }
         }
 
-        table->elem_num = elem_num - 1; 
-
+        table->elem_num = elem_num; 
+        
         DeleteBuffer(&buf);
 
         return 0;
@@ -146,79 +168,26 @@ int DeleteTableNodeData(hash_table* table)
         return 0;
 }
 
-int FindElem(Elem_t elem, hash_table* table, err_allocator* /*err_alloc*/)
-{
-        size_t index_list = table->hash_function(elem) % table->size;
-        
-        List* list = table->bucket[index_list];
 
-        ssize_t counter = list->nodes[0].next;
-        
-        while(counter != 0)
-        {
-                if (strcmp(list->nodes[counter].data, elem) == 0)
-                        return (int) counter;
-                
-                counter = list->nodes[counter].next;
-        }
-
-        return -1;
-}      
-
-int AddElem(Elem_t elem, hash_table* table, err_allocator* err_alloc)
-{
-        size_t index_list = table->hash_function(elem) % table->size;
-        
-        List* list = table->bucket[index_list];
-
-        Push_Back(list, elem);
-
-        if (list->errors != 0)
-        {
-                INSERT_ERROR_NODE(err_alloc, "list lib contains an error");
-                return 1;
-        }
-
-        return 0;
-}
-
-
-int RemoveElem(Elem_t elem, hash_table* table, err_allocator* err_alloc)
+int RemoveElem(Elem_t elem, hash_table* table, err_allocator* /*err_alloc*/)
 {
         size_t index_list = table->hash_function(elem) % (table->size);
         
         List* list = table->bucket[index_list];
 
-        size_t size_elem = strlen(elem);
+        Iterator cur_it = ListBegin(list);
 
-        ssize_t counter = 0;
-        do
+        for (Iterator end_it = ListEnd(list); cur_it.index != end_it.index; cur_it = Next(&cur_it)) 
         {
-                if (strncmp(list->nodes[counter].data, elem, size_elem) == 0)
-                        break;
-                counter = list->nodes[counter].next;
-        } while (counter != 0);
-
-        if (counter == 0)
-        {       
-                // elem is not find
-                return 1; 
-        }
-        else 
-        {
-                Iterator it = {};
-                it.list  = list;
-                it.index = counter;
-                ListErase(&it);
-
-                if (it.list->errors != 0)
+                if (strcmp(ListGetElem(&cur_it), elem) == 0)
                 {
-                        INSERT_ERROR_NODE(err_alloc, "list lib contains an error");
-                        return 1;
+                        ListErase(list, cur_it.index, &cur_it);
+                        return 0;
                 }
         }
 
-        return 0;
+
+        return 1;
 }
 
 
@@ -232,9 +201,6 @@ int DumpHashTable(FILE* To, hash_table* table)
         for (size_t i = 0; i < table->size; i++)
         {
                 fprintf(To, "%lu,%lu\n", i, table->bucket[i]->num_elem);
-
-                // fprintf(To, "%3lu have %4lu elements\n", i, table->bucket[i]->num_elem);
-                // TextDumpList(table->bucket[i]);
         }
 
         return 0;
@@ -265,17 +231,15 @@ size_t GetDispersion(hash_table* table)
 
 size_t GetLoadFactor(hash_table* table)
 {
-        // size_t elem_sum = 0;
         size_t empty_lists_num = 0;
 
         for (size_t i = 0; i < table->size; i++)
         {
                 if (table->bucket[i]->num_elem != 0)
                 {
-                        // elem_sum += table->bucket[i]->size;
                         empty_lists_num++;
                 }
         }
-        // printf("%lu and %d and %lu\n", table->size, (int)table->elem_num, empty_lists_num);
+        
         return table->elem_num / empty_lists_num;
 }

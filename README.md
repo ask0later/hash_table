@@ -117,7 +117,7 @@ size_t AverageHash(char* buffer)
 }
 ~~~
 
-![average_hash](https://github.com/ask0later/hash_table/blob/b482ea65fe5d105a4e427337b9f87878191b21fd/image/Average_HashFunction.png)
+![average_hash](./image/Average_HashFunction.png)
 
 load-factor = 141. dispersion = 131.
 

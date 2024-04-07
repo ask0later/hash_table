@@ -1,9 +1,5 @@
-4679, 458       ZeroHash, 
-167, 100        FirstHash
-334, 164        LenghtHash
-45, 7           SumHash
-141, 131        AverageHash
-45, 6           ROLHash
-45, 15          RORHash
-45, 6           GNUHash
-6, 4            
+
+45, 6
+45, 6
+45, 6
+45, 6
