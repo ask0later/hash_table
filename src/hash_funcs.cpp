@@ -1,7 +1,6 @@
 
 #include "hash_funcs.h"
 
-
 size_t ZeroHash(char* /*buffer*/)
 {
         return 0;
@@ -158,3 +157,24 @@ size_t CRC32Hash(char* buffer)
 
         return (size_t) crc ^ 0xFFFFFFFF;
 }
+
+size_t IntrinsicsCRC32Hash(char* buffer)
+{
+        unsigned int hash = 0xEDB88320;
+        
+        size_t i = 0;
+        while (buffer[i] != '\0')
+        {                
+                hash = _mm_crc32_u8(hash, (unsigned char) buffer[i]);
+                i++;
+        }
+
+        return (size_t) hash;
+}
+
+
+
+
+
+
+

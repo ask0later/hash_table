@@ -30,7 +30,7 @@ size_t ZeroHash(char* /*buffer*/)
 }
 ~~~
 
-![zero_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/Zero_HashFunction.png)
+![zero_hash](./image/graphics/Zero_HashFunction.png)
 
 load-factor = 4679. dispersion = 458.
 
@@ -46,7 +46,7 @@ size_t FirstHash(char* buffer)
 }
 ~~~
 
-![first_symbol_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/ASCII_code_first_symbol_HashFunction.png)
+![first_symbol_hash](./image/graphics/ASCII_code_first_symbol_HashFunction.png)
 
 load-factor = 167. dispersion = 100.
 
@@ -62,7 +62,7 @@ size_t LenghtHash(char* buffer)
 }
 ~~~
 
-![lenght_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/Lenght_HashFunction.png)
+![lenght_hash](./image/graphics/Lenght_HashFunction.png)
 
 load-factor = 334. dispersion = 164.
 
@@ -85,7 +85,7 @@ size_t SumHash(char* buffer)
 }
 ~~~
 
-![sum_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/Symbol_Sum_HashFunction.png)
+![sum_hash](./image/graphics/Symbol_Sum_HashFunction.png)
 
 load-factor = 45. dispersion = 7.
 
@@ -93,7 +93,7 @@ load-factor = 45. dispersion = 7.
 
 ### SumHashFunction c большим размером хеш-таблици
 
-![sum_with_big_size_hash](https://github.com/ask0later/hash_table/blob/fbdea56c887895f8a80b9a854d3db108dcefccc7/image/Sum_HashFunction_Big_size.png)
+![sum_with_big_size_hash](./image/graphics/Sum_HashFunction_Big_size.png)
 
 Как видим, большинство bucket'ов не заполнено, поэтому функция не является подходящей.
 
@@ -117,7 +117,7 @@ size_t AverageHash(char* buffer)
 }
 ~~~
 
-![average_hash](./image/Average_HashFunction.png)
+![average_hash](./image/graphics/Average_HashFunction.png)
 
 load-factor = 141. dispersion = 131.
 
@@ -139,7 +139,7 @@ size_t ROLHash(char* buffer)
 }
 ~~~
 
-![rol_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/ROL_HashFunction.png)
+![rol_hash](./image/graphics/ROL_HashFunction.png)
 
 load-factor = 45. dispersion = 6.
 
@@ -160,7 +160,7 @@ size_t RORHash(char* buffer)
         return hash;
 }
 ~~~
-![ror_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/ROR_HashFunction.png)
+![ror_hash](./image/graphics/ROR_HashFunction.png)
 
 load-factor = 45. dispersion = 15.
 
@@ -181,18 +181,170 @@ size_t GNUHash(char* buffer)
 }
 ~~~
 
-![gnu_hash](https://github.com/ask0later/hash_table/blob/1f4f591cee359f590a712a751f5bc399fa4e8812/image/GNU_HashFunction.png)
+![gnu_hash](./image/graphics/GNU_HashFunction.png)
 
 load-factor = 45. dispersion = 6.
 
+
+### CRC32
+
+~~~
+size_t CRC32Hash(char* buffer)
+{
+        unsigned int crc = 0xFFFFFFFF;
+ 
+        size_t i = 0;
+        while (buffer[i] != '\0')
+        {                
+                crc = (crc >> 8) ^ crc32_table[(crc ^ (unsigned int) buffer[i]) & 0xFF];
+                i++;
+        }
+
+        return (size_t) crc ^ 0xFFFFFFFF;
+}
+~~~
+
+![gnu_hash](./image/graphics/GNU_HashFunction.png)
+
+
+
 ### Сравнение хеш-функций
  
-| Хеш-функции | ZeroHash | FirstHash | LenghtHash | SumHash | AverageHash | ROLHash | RORHash | GNUHash|
-| ------      | :------: | :-------: | :--------: | :-----: | :---------: | :-----: | :------:|:------:| 
-| load-factor |   4679   |    167    |    334     |    45   |     141     |    45   |    45   |   45   |
-| dispersion  |    458   |    100    |    164     |     7   |     131     |     6   |    15   |    6   |
+| Хеш-функции | ZeroHash | FirstHash | LenghtHash | SumHash | AverageHash | ROLHash | RORHash | GNUHash|  CRC32  |
+| ------      | :------: | :-------: | :--------: | :-----: | :---------: | :-----: | :------:|:------:|:-------:|
+| load-factor |   4679   |    167    |    334     |    45   |     141     |    45   |    45   |   45   |   45    |
+| dispersion  |    458   |    100    |    164     |     7   |     131     |     6   |    15   |    6   |    6    |
 
-Самым лучшим выбором хеш-функции будет ROLHash или GNUHash.
+Самым лучшим выбором хеш-функции будет ROLHash, GNUHash или CRC32.
 
 
-## 2 часть. Оптимизация поиска элемента в списке.
+## 2 часть. Оптимизация.
+
+Прежде чем оптимизировать программу, необходимо понять, где находятся узкие места. Для этого я использую профилировщик ```callgrind```. Он показывает общее время выполнение функции и выполнение без учета вызовов других функций. 
+
+Листинг программа без оптимизаций и с проверками выглядит так:
+
+![verificator](./image/optimisation/verify.jpg)
+
+Хорошо видно, что обработка ошибок выполняется больше всех остальных функций. Поэтому отключим ее и добавим флаг компиляции ```-O3```.
+
+### Base Line
+Это станет нашей стартовой точкой, с которой мы будем сравнивать улучшение времени выполнения функций.
+
+![base_line](./image/optimisation/base_line.jpg)
+
+Видно, узкими местами программы являются функция поиска элемента в списке и функция вычисления хеша объекта.
+
+
+### Оптимизация 1. Ассемблерная вставка.
+
+Функция поиска вызывает из-под себя функцию сравнения элементов. Первоначально это ```strcmp```. Медленное выполнение происходит из-за того, что на вход могут подаваться объекты, сколь угодно большие и маленькие, этой функции надо рассматривать все варианты. Но в нашей задаче используются слова из литературы, и как мы видели раньше, длина всех слов не превосходит 16, поэтому под каждый объект будем выделять 16 байт (128 бит). Используя XMM-регистры (128 бит) ускорим сравнение элементов.
+
+~~~
+int InlineStrcmp(const char str_1[WORD_LENGTH], const char str_2[WORD_LENGTH])
+{
+    int result = 0;
+
+    asm (".intel_syntax noprefix\n"
+         "movdqu xmm1, XMMWORD PTR [%1]\n"
+         "movdqu xmm2, XMMWORD PTR [%2]\n"
+         "pcmpeqb xmm1, xmm2\n"
+         "pmovmskb %0, xmm1\n"
+         ".att_syntax prefix\n"
+         : "=r" (result) : "r" (str_1), "r" (str_2) : "xmm1", "xmm2", "cc");
+
+    return result;
+}
+~~~
+
+После этого листинг прогрмаммы выглядит так:
+![base_line](./image/optimisation/inline.png)
+
+Функция ```FindElem``` ускорилась почти в 3 раза (на 66%), ```CompleteHashTable``` - в 2 раза (на 49%).
+
+
+### Оптимизация 2. SIMD.
+
+Ускорить сравнение элементов можно другим способом, с помощью инструкции SIMD. 16 байт каждого объекта будем записывать в переменную __m128i, а затем сравнивать:
+
+~~~
+Iterator IntrinsicFindElem(List* list, Elem_t value)
+{
+    __m128i intr_value =  _mm_lddqu_si128((const __m128i*) value);
+    
+    Iterator elem_2 = {list, -1};
+
+    for (Iterator it_1 = ListBegin(list), it_2 = ListEnd(list); it_1.index != it_2.index; it_1 = Next(&it_1))
+    {
+        Elem_t elem_1 = ListGetElem(&it_1);
+        __m128i intr_elem_1 =  _mm_lddqu_si128((const __m128i*) elem_1);
+
+        __m128i cmp = _mm_cmpeq_epi8(intr_elem_1, intr_value);
+
+        int int_cmp = _mm_movemask_epi8(cmp);
+
+        if (int_cmp == 65535)
+        {
+            elem_2 = it_1;   
+            break;
+        }
+    }
+
+    return elem_2;
+}
+~~~
+
+
+После этого листинг прогрмаммы выглядит так:
+![base_line](./image/optimisation/intrins.png)
+
+Функция ```FindElem``` ускорилась почти в 3 раза (на 68%), ```CompleteHashTable``` - в 2 раза (на 51%).
+
+
+
+
+### Оптимизация 3. Функция на ассемблере.
+
+Из предыдущего листинга видно, что единственной не стандартной функцией осталась ```CRC32Hash```.
+
+В ассемблере уже есть функция ```crc32```. Поэтому перепишем алгоритм при помощи этой инструкции. 
+
+~~~
+section .text
+global AsmGetHashCRC32
+AsmGetHashCRC32:
+    xor rax, rax
+    xor r10, r10
+    
+    .loop:
+        crc32 eax, byte [rdi + r10]     
+        inc r10
+        cmp byte [rdi + r10], 0x00       
+        jne .loop
+    ret
+~~~
+
+После этого листинг прогрмаммы выглядит так:
+![base_line](./image/optimisation/intrin_crc.png)
+
+Ассемблерная функция не отображается в листинге, скорее всего потому, что компилятор вставляет ее напрямую.
+
+Количество тактов исполнения функции ```CompleteHashTable``` уменьшилось на ~2кк (на 0.3%).
+
+
+### Итоги оптимизации.
+
+Ясно, что оптимизация функции вычисления хеша элемента незначительно влияет на время выполнения всей программы. Это из-за того, что количество вызовов фунции ```CRC32Hash``` много меньше чем функции ```FindElem``` (31k и 15kk calls соответственно).
+
+
+| Оптимизации   | Время выполняния, % |
+| ------------- | :-------: |
+| с проверками флаг -О0  | 1825 |
+| без проверок флаг -О3 | 100 |
+| inline strcmp |  51 |
+|     SIMD      |  49 |
+| CRC32 на ASM  | 48.7 |
+
+
+
+Хотя у SIMD-инструкций время выполнения меньше, вызывать вместо ```strcmp``` - ```InlineStrcmp``` я считаю лучше, потому что код становится намного читабельным и понятным (из-за того, что мы меняем всего лишь одну функцию). 

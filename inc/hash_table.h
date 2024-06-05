@@ -7,16 +7,21 @@
 #include "list.h"
 #include "read_file.h"
 
-typedef char* Elem_t;
+#include <smmintrin.h>
+#include <immintrin.h>
+
 
 
 const char    TEST_FILE[] = "text/test.txt";
 const char  HAMLET_FILE[] = "text/hamlet.txt";
 const char GENERAL_FILE[] = "data/general.txt";
 
-const size_t HASH_TABLE_SIZE = 103;
+const size_t HASH_TABLE_SIZE = 1103; // 101 // 1103 // 2027
 const size_t MAX_SIZE_WORD   = 20;
 
+const size_t SEARCH_ITERATIONS_NUM = 500; 
+
+ 
 struct hash_table
 {
         size_t (*hash_function) (char*);
@@ -35,9 +40,6 @@ int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_a
 int DeleteTableNodeData(hash_table* table);
 
 int RemoveElem(Elem_t elem, hash_table* table, err_allocator* err_alloc);
-
-
-
 
 
 

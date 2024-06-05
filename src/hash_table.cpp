@@ -1,60 +1,13 @@
 #include "hash_table.h"
+#include "hash_funcs.h"
 #include "list.h"
 #include <cmath>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 
-
-int TestHashFunction(hash_table* table, size_t (*hash_function) (char*), const char text_file[], err_allocator* err_alloc)
-{
-        if (CtorHashTable(table, hash_function, err_alloc) != 0)
-        {
-                ERR_ALLOC_TERMINATE(err_alloc);
-                DtorHashTable(table);
-                return 1;
-        }
-        
-
-        if (CompleteHashTable(HAMLET_FILE, table, err_alloc) != 0)
-        {
-                INSERT_ERROR_NODE(err_alloc, "hash table completion error");
-                ERR_ALLOC_TERMINATE(err_alloc);
-                DeleteTableNodeData(table);
-                DtorHashTable(table);
-                return 1;
-        }
-
-        FILE* To = fopen(text_file, "w");
-        if (To == NULL)
-        {
-                INSERT_ERROR_NODE(err_alloc, "file opening is failed");
-                ERR_ALLOC_TERMINATE(err_alloc);
-                DeleteTableNodeData(table);
-                DtorHashTable(table); 
-        }
-        
-        DumpHashTable(To, table);
-        fclose(To);
-
-        FILE* general = fopen(GENERAL_FILE, "a");
-        if (To == NULL)
-        {
-                INSERT_ERROR_NODE(err_alloc, "file opening is failed");
-                ERR_ALLOC_TERMINATE(err_alloc);
-                DeleteTableNodeData(table);
-                DtorHashTable(table); 
-        }
-        
-        fprintf(general, "%lu, %lu\n", GetLoadFactor(table), GetDispersion(table));
-        
-        fclose(general);
-
-        DeleteTableNodeData(table);
-
-        DtorHashTable(table);
-
-        return 0;
-}
+// nasm -f elf64  print.asm
+// g++ -no-pie main.cpp print.o
 
 int CtorHashTable(hash_table* table, size_t (*hash_function) (char*), err_allocator* err_alloc)
 {
@@ -94,21 +47,40 @@ void DtorHashTable(hash_table* table)
 }
 
 
+
+
+int TestHashFunction(hash_table* table, size_t (*hash_function) (char*), const char text_file[], err_allocator* err_alloc)
+{
+        CtorHashTable(table, hash_function, err_alloc);
+        CompleteHashTable(HAMLET_FILE, table, err_alloc);
+
+        FILE* To = fopen(text_file, "w");
+        if (To == NULL) printf("error");
+        DumpHashTable(To, table);
+        fclose(To);
+
+        
+
+        FILE* general = fopen(GENERAL_FILE, "a");
+        if (general == NULL) printf("error");
+        fprintf(general, "load factor = %lu, dispersion =  %lu, elem_num = %lu, table_size = %lu\n", GetLoadFactor(table), GetDispersion(table), table->elem_num, table->size);
+        fclose(general);
+
+        DtorHashTable(table);
+
+        return 0;
+}
+
+
 int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_alloc)
 {
         Text buf = {};
 
-        if (CreateBuffer(&buf, file, err_alloc) == 1)
-        {
-                INSERT_ERROR_NODE(err_alloc, "read_file lib is failed");
-                DeleteBuffer(&buf);
-                return 1;
-        }
-        
+        CtorBuffer(&buf, file, err_alloc);
         size_t elem_num = 0;
 
-        char   word[MAX_SIZE_WORD] = {};
-        char*  word_ptr   = NULL;
+        char   word[WORD_LENGTH] = {};
+        char*  word_ptr   = nullptr;
         size_t word_size  = 0; 
 
         size_t i_text = 0;
@@ -117,30 +89,29 @@ int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_a
 
         while (i_text <= buf.size_buffer)
         {
-                sscanf(buf.str + i_text, "%s", word);
-                word_size = strlen(word); 
+                if (sscanf(buf.str + i_text, "%s", word) == 0)
+                        break;
 
+                word_size = strlen(word); 
+                
                 i_text += word_size + 1;
 
-                word_ptr = (char*) calloc(word_size + 1, sizeof(char));
-                if (!word_ptr)
-                {
-                        INSERT_ERROR_NODE(err_alloc, "dynamic allocation is fault");
-                        DeleteBuffer(&buf);
-                        return 1;
-                }
-                
-                strncpy(word_ptr, word, word_size + 1);
-                
-                size_t list_index = table->hash_function(word_ptr) % table->size;
+                word_ptr = (char*) calloc(WORD_LENGTH, sizeof(char));
+                strncpy(word_ptr, word, word_size);
+
+                size_t list_index = ((size_t) AsmGetHashCRC32((unsigned char*) word_ptr)) % table->size;//table->hash_function(word_ptr) % table->size; // ((size_t) AsmGetHashCRC32((unsigned char*) word_ptr)) % table->size; 
+                memset(word, 0, WORD_LENGTH);
 
                 current_list = table->bucket[list_index];
-
-                Iterator it = FindElem(current_list, word_ptr);
+                
+                Iterator it;
+                for (size_t it_num = 0; it_num < SEARCH_ITERATIONS_NUM; it_num++)
+                {
+                        it = IntrinsicFindElem(current_list, word_ptr);
+                }
 
                 if (it.index == -1)
                 {
-                        it.index = 0;
                         ListPushBack(current_list, word_ptr, &it);
                         elem_num++;
                 }
@@ -150,46 +121,11 @@ int CompleteHashTable(const char file[], hash_table* table, err_allocator* err_a
                 }
         }
 
-        table->elem_num = elem_num; 
+        table->elem_num = elem_num;
         
-        DeleteBuffer(&buf);
-
+        DtorBuffer(&buf);
         return 0;
 }
-
-
-int DeleteTableNodeData(hash_table* table)
-{
-        for (size_t i = 0; i < table->size; i++)
-        {
-                DtorNodeData(table->bucket[i]);
-        }
-        
-        return 0;
-}
-
-
-int RemoveElem(Elem_t elem, hash_table* table, err_allocator* /*err_alloc*/)
-{
-        size_t index_list = table->hash_function(elem) % (table->size);
-        
-        List* list = table->bucket[index_list];
-
-        Iterator cur_it = ListBegin(list);
-
-        for (Iterator end_it = ListEnd(list); cur_it.index != end_it.index; cur_it = Next(&cur_it)) 
-        {
-                if (strcmp(ListGetElem(&cur_it), elem) == 0)
-                {
-                        ListErase(list, cur_it.index, &cur_it);
-                        return 0;
-                }
-        }
-
-
-        return 1;
-}
-
 
 
 //------------------------------------------------------------------------
@@ -206,8 +142,6 @@ int DumpHashTable(FILE* To, hash_table* table)
         return 0;
 }
 
-
-//-------------------------------------------------------------------------
 
 
 size_t GetDispersion(hash_table* table)

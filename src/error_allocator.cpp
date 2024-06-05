@@ -1,7 +1,7 @@
 #include "error_allocator.h"
 
 
-int error_allocator_Ctor(err_allocator* err_alloc)
+int CtorErrorAllocator(err_allocator* err_alloc)
 {
     err_node* nodes = NULL;
 
@@ -9,13 +9,14 @@ int error_allocator_Ctor(err_allocator* err_alloc)
     if (!nodes) return 1;
     nodes->next = -1;                   // next doesn't exist
 
-    err_alloc->size = 0;
+    err_alloc->size  = 0;
+    err_alloc->need_call  = false;
     err_alloc->nodes = nodes;
 
     return 0;
 }
 
-int error_allocator_Dtor(err_allocator* err_alloc)
+int DtorErrorAllocator(err_allocator* err_alloc)
 {
     err_alloc->size = __INT_MAX__;;
     free(err_alloc->nodes);
@@ -24,7 +25,7 @@ int error_allocator_Dtor(err_allocator* err_alloc)
 }
 
 
-int error_insert(err_allocator* err_alloc, const char message[], const char file[], const char func[], const int line)
+int ErrorInsert(err_allocator* err_alloc, const char message[], const char file[], const char func[], const int line)
 {
     assert(err_alloc);
 
@@ -36,6 +37,7 @@ int error_insert(err_allocator* err_alloc, const char message[], const char file
     strcpy(current_node->error.file, file);
     strcpy(current_node->error.func, func);
     current_node->error.line = line;
+
     
     if (err_alloc->size == NUMBERS_OF_ERRORS - 1)
     {
@@ -55,7 +57,7 @@ int error_insert(err_allocator* err_alloc, const char message[], const char file
     return 0;
 }
 
-int error_erase(err_allocator* err_alloc)
+int ErrorErase(err_allocator* err_alloc)
 {
     assert(err_alloc);
 
@@ -78,7 +80,7 @@ int error_erase(err_allocator* err_alloc)
     return 0 ;
 }
 
-int dump_error(err_allocator* err_alloc)
+int DumpError(err_allocator* err_alloc)
 {
     assert(err_alloc);
     
@@ -103,6 +105,7 @@ int dump_error(err_allocator* err_alloc)
         line    = err_alloc->nodes[next].error.line;
         
         next = err_alloc->nodes[next].next;
+
         printf("%s: call %s from %s:%d\n", message, func, file, line);
     }
 

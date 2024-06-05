@@ -19,8 +19,8 @@ struct Text
     size_t     position;
 };
 
-int  CreateBuffer(Text* buf, const char* input_file, err_allocator* err_alloc);
-void  DeleteBuffer(Text* buf);
+int  CtorBuffer(Text* buf, const char* input_file, err_allocator* err_alloc);
+void DtorBuffer(Text* buf);
 
 
 int ReadFile(Text* buf, const char*  input_file, err_allocator* err_alloc);

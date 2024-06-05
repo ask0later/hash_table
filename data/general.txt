@@ -1,6 +1,40 @@
 
-45, 6
-45, 6
-45, 6
-45, 6
-45, 6
+__intrinsics
+load factor = 4, dispersion =  2, elem_num = 4646, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4646, table_size = 1103
+
+
+__start point
+load factor = 4, dispersion =  2, elem_num = 4680, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4680, table_size = 1103
+
+
+__CRC32 on asm
+load factor = 4, dispersion =  2, elem_num = 4680, table_size = 1103
+
+__intrinsics and __CRC32
+
+
+
+
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 2, dispersion =  1, elem_num = 4681, table_size = 2027
+load factor = 2, dispersion =  1, elem_num = 4681, table_size = 2027
+load factor = 2, dispersion =  1, elem_num = 4681, table_size = 2027
+load factor = 2, dispersion =  1, elem_num = 4681, table_size = 2027
+load factor = 2, dispersion =  1, elem_num = 4681, table_size = 2027
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103
+load factor = 4, dispersion =  2, elem_num = 4681, table_size = 1103

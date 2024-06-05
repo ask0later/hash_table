@@ -1,6 +1,6 @@
 #include "read_file.h"
 
-int CreateBuffer(Text* buf, const char* input_file, err_allocator* err_alloc)
+int CtorBuffer(Text* buf, const char* input_file, err_allocator* err_alloc)
 {
     buf->position = 0;
 
@@ -9,6 +9,7 @@ int CreateBuffer(Text* buf, const char* input_file, err_allocator* err_alloc)
     if (buf->size_buffer == 0)
     {
         INSERT_ERROR_NODE(err_alloc, "error getting size of file");
+        err_alloc->need_call = true;
         return 1;
     }
     
@@ -16,12 +17,14 @@ int CreateBuffer(Text* buf, const char* input_file, err_allocator* err_alloc)
     if (buf->str== NULL)
     {
         INSERT_ERROR_NODE(err_alloc, "dynamic allocation is fault");
+        err_alloc->need_call = true;
         return 1;
     }
 
     if (ReadFile(buf, input_file, err_alloc) == 1)
     {
         INSERT_ERROR_NODE(err_alloc, "error reading file");
+        err_alloc->need_call = true;
         return 1;       
     }
     
@@ -30,7 +33,7 @@ int CreateBuffer(Text* buf, const char* input_file, err_allocator* err_alloc)
     return 0;
 }
 
-void DeleteBuffer(Text* buf)
+void DtorBuffer(Text* buf)
 {
     buf->size_buffer = INT_MAX;
     buf->position    = INT_MAX;
@@ -42,15 +45,18 @@ void DeleteBuffer(Text* buf)
 int ReadFile(Text* buf, const char* input_file, err_allocator* err_alloc)
 {
     FILE* fname = fopen(input_file, "r");
+    
     if (!fname)
     {
         INSERT_ERROR_NODE(err_alloc, "file failed to open");
+        err_alloc->need_call = true;
         return 1;
     }
 
     if (fread(buf->str, sizeof(char), buf->size_buffer, fname) == 0)
     {
         INSERT_ERROR_NODE(err_alloc, "no characters were counted");
+        err_alloc->need_call = true;
         return 1;
     }
 
